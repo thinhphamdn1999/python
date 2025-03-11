@@ -1,3 +1,4 @@
+import pandas
 student_dict = {"student": ["Angela", "James", "Lily"], "score": [56, 76, 98]}
 
 # Looping through dictionaries:
@@ -5,7 +6,6 @@ for key, value in student_dict.items():
     # Access key and value
     pass
 
-import pandas
 
 student_data_frame = pandas.DataFrame(student_dict)
 
@@ -31,6 +31,17 @@ print(nato_phonetic_alphabet_dic)
 
 # TODO 2. Create a list of the phonetic code words from a word that the user inputs.
 
-user_input = input("Enter a word: ");
-phonetic_code_words = [nato_phonetic_alphabet_dic[char.upper()] for char in user_input if char.upper() in nato_phonetic_alphabet_dic]
-print(phonetic_code_words)
+def generate_phonetic_code_words():
+    is_valid_input = False
+
+    while not is_valid_input:
+        try:
+            user_input = input("Enter a word: ")
+            phonetic_code_words = [nato_phonetic_alphabet_dic[char.upper()] for char in user_input]
+        except KeyError:
+            print("Sorry, only letters in the alphabet please.")
+        else:
+            print(phonetic_code_words)
+            is_valid_input = True
+
+generate_phonetic_code_words()
