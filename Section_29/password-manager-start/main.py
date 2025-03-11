@@ -1,3 +1,5 @@
+from hmac import new
+import json
 from random import choice, randint, shuffle
 from tkinter import Button, Canvas, Entry, Label, PhotoImage, Tk, messagebox
 
@@ -71,38 +73,47 @@ def generate_password():
     password_input.delete(0, "end")
     password_input.insert(0, password)
 
-
-# ---------------------------- SAVE PASSWORD ------------------------------- #
-
-
 def save():
     website_value = website_input.get()
     email_value = email_input.get()
     password_value = password_input.get()
+    new_data = {website_value: {"email": email_value, "password": password_value}}
 
-    if len(website_value) == 0 or len(password_value) == 0:
+    if len(website_value) == 0 or len(password_value) == 0 or len(email_value) == 0:
         messagebox.showinfo(
             title="Oops", message="Please make sure you haven't left any fields empty."
         )
         return
-    else:
-        is_ok = messagebox.askokcancel(
-            title=website_value,
-            message=f"These are the details entered: \nEmail: {email_value}\nPassword: {password_value}\nIs it ok to save?",
-        )
-        if not is_ok:
-            return
 
-    with open("data.txt", "a") as data_file:
-        data_file.write(f"{website_value} | {email_value} | {password_value}\n")
-        website_input.delete(0, "end")
-        password_input.delete(0, "end")
-        website_input.focus()
-        messagebox.showinfo(title="Success", message="Password saved successfully!")
+    try:
+        with open("data.json", "r") as data_read_file:
+            data = json.load(data_read_file)
+            data.update(new_data)
+    except FileNotFoundError:
+        data = new_data
 
+    with open("data.json", "w") as data_write_file:
+        json.dump(data, data_write_file, indent=4)
+    website_input.delete(0, "end")
+    password_input.delete(0, "end")
+    website_input.focus()
+    messagebox.showinfo(title="Success", message="Password saved successfully!")
 
-# ---------------------------- UI SETUP ------------------------------- #
-
+def search():
+    website_value = website_input.get()
+    try:
+        with open("data.json", "r") as data_read_file:
+            data = json.load(data_read_file)
+            email = data[website_value]["email"]
+            password = data[website_value]["password"]
+            messagebox.showinfo(
+                title=website_value,
+                message=f"Email: {email}\nPassword: {password}",
+            )
+    except FileNotFoundError:
+        messagebox.showinfo(title="Error", message="No Data File Found")
+    except KeyError:
+        messagebox.showinfo(title="Error", message=f"No details for {website_value} exists.")
 
 window = Tk()
 window.title("Password Manager")
@@ -115,13 +126,16 @@ canvas.grid(row=0, column=1)
 
 website_label = Label(text="Website:")
 website_label.grid(row=1, column=0)
-website_input = Entry(width=40)
-website_input.grid(row=1, column=1, columnspan=2)
+website_input = Entry(width=21)
+website_input.grid(row=1, column=1)
 website_input.focus()
+
+search_button = Button(text="Search", width=14, command=search)
+search_button.grid(row=1, column=2)
 
 email_label = Label(text="Email/Username:")
 email_label.grid(row=2, column=0)
-email_input = Entry(width=40)
+email_input = Entry(width=41)
 email_input.grid(row=2, column=1, columnspan=2)
 email_input.insert(0, "abc@gmail.com")
 
